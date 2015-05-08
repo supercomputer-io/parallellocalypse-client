@@ -1,0 +1,26 @@
+{
+  "name": "parallellocalypse-client",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "preinstall": "node-gyp configure build",
+    "start": "./node_modules/.bin/coffee app.coffee",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/pcarranzav/parallellocalypse-client"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/pcarranzav/parallellocalypse-client/issues"
+  },
+  "homepage": "https://github.com/pcarranzav/parallellocalypse-client",
+  "dependencies": {
+    "coffee-script": "^1.9.2",
+    "jimp": "^0.2.3",
+    "request": "^2.55.0",
+    "superagent": "^1.2.0"
+  }
+}
