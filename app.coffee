@@ -5,6 +5,7 @@ config = require './config.json'
 getMac = require('getmac').getMac
 _ = require 'lodash'
 
+console.log('Starting up...')
 getMac (err,myMacAddress) ->
 
 	hubImagesUrl = 'http://localhost:8080/images/'
@@ -15,6 +16,7 @@ getMac (err,myMacAddress) ->
 	    uuid: myMacAddress
 	})
 
+	console.log('Subscribing...')
 	pubnub.subscribe({
 		channel: 'work',
 		heartbeat: 10,
@@ -22,6 +24,7 @@ getMac (err,myMacAddress) ->
 	})
 
 	processWork = (work) ->
+		console.log('Starting task.')
 		pubnub.publish({
 			channel: 'working'
 			message: myMacAddress
@@ -52,11 +55,14 @@ getMac (err,myMacAddress) ->
 						value: result
 						name: img.personName
 						imageId: img.id
+						chunkId: work.chunkId
 					}
 					amountDone += 1
 					if(amountDone == work.workSize)
 						whenDone()
 
+		console.log('Getting:')
+		console.log(hubImagesUrl + work.targetImage.url)
 		request.get(hubImagesUrl + work.targetImage.url).end (req, res) ->
 			image1Buffer = res.body
 			new Jimp image1Buffer, (err, image1) ->
@@ -71,3 +77,5 @@ getMac (err,myMacAddress) ->
 		channel: myMacAddress
 		message: processWork
 	})
+
+	console.log('Ready.')
