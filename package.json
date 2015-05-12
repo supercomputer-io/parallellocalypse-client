@@ -19,7 +19,10 @@
   "homepage": "https://github.com/pcarranzav/parallellocalypse-client",
   "dependencies": {
     "coffee-script": "^1.9.2",
+    "getmac": "^1.0.7",
     "jimp": "^0.2.3",
+    "lodash": "^3.8.0",
+    "pubnub": "^3.7.10",
     "request": "^2.55.0",
     "superagent": "^1.2.0"
   }
