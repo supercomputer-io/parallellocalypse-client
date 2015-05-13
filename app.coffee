@@ -40,6 +40,10 @@ getMac (err,myMacAddress) ->
 	pubnub.subscribe({
 		channel: 'work',
 		heartbeat: 10,
+		state: {
+			status: 'Idle'
+			chunkId: null
+		},
 		message: (m) -> console.log("new work! " + m)
 	})
 
@@ -47,6 +51,13 @@ getMac (err,myMacAddress) ->
 		console.log('Starting task.')
 		startTime = Date.now()
 
+		pubnub.state({
+			channel: 'work'
+			state: {
+				status: 'Working'
+				chunkId: work.chunkId
+			}
+		})
 		pubnub.publish({
 			channel: 'working'
 			message: {
@@ -69,6 +80,14 @@ getMac (err,myMacAddress) ->
 				message: {
 					device: myMacAddress
 					progress: 100
+				}
+			})
+
+			pubnub.state({
+				channel: 'work'
+				state: {
+					status: 'Idle'
+					chunkId: null
 				}
 			})
 
