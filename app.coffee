@@ -8,7 +8,17 @@ _ = require 'lodash'
 console.log('Starting up...')
 getMac (err,myMacAddress) ->
 
-	hubImagesUrl = 'http://localhost:8080/images/'
+	hubUrl = 'http://localhost:8080/'
+	hubImagesUrl = hubUrl + 'images/'
+
+	console.log('Registering...')
+	request.get('http://ipinfo.io/json').end (err, loc) ->
+		location = loc.body
+		request.post(hubUrl + 'api/devices').send({resinId: process.env.RESIN_DEVICE_UUID, macAddress: myMacAddress, location}).end (err, res) ->
+			if err
+				console.log(err)
+			else
+				console.log(res.body)
 
 	pubnub = require("pubnub")({
 	    publish_key   : config.publish_key,
@@ -25,9 +35,14 @@ getMac (err,myMacAddress) ->
 
 	processWork = (work) ->
 		console.log('Starting task.')
+		startTime = Date.now()
+
 		pubnub.publish({
 			channel: 'working'
-			message: myMacAddress
+			message: {
+				device: myMacAddress
+				progress: 0
+			}
 		})
 		targetImage = work.targetImage
 		results = []
@@ -36,11 +51,34 @@ getMac (err,myMacAddress) ->
 			console.log('Done!')
 			console.log(results)
 			theResult = _.max(results, 'value')
+			theResult.device = myMacAddress
+			theResult.elapsedTime = Date.now() - startTime
+
+			pubnub.publish({
+				channel: 'working'
+				message: {
+					device: myMacAddress
+					progress: 100
+				}
+			})
 
 			pubnub.publish({
 				channel: 'results'
 				message: theResult
 			})
+
+		progress = 0
+		onProgress = (amountDone, totalSize) ->
+			percent = amountDone * 100 / totalSize
+			if Math.floor(percent / 10) > Math.floor(progress / 10)
+				pubnub.publish({
+					channel: 'working'
+					message: {
+						device: myMacAddress
+						progress: percent
+					}
+				})
+				progress = percent
 
 		correlate = (ind, img, image1) ->
 			console.log('Correlating #' + (ind+1))
@@ -58,12 +96,13 @@ getMac (err,myMacAddress) ->
 						chunkId: work.chunkId
 					}
 					amountDone += 1
+					onProgress(amountDone, work.workSize)
 					if(amountDone == work.workSize)
 						whenDone()
 
 		console.log('Getting:')
-		console.log(hubImagesUrl + work.targetImage.url)
-		request.get(hubImagesUrl + work.targetImage.url).end (req, res) ->
+		console.log(hubImagesUrl + work.targetImage.original_img)
+		request.get(hubImagesUrl + work.targetImage.original_img).end (req, res) ->
 			image1Buffer = res.body
 			new Jimp image1Buffer, (err, image1) ->
 				ind = 0
