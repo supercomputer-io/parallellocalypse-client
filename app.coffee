@@ -1,5 +1,15 @@
 xcorr = require './build/Release/xcorr'
 request = require 'superagent'
+require('superagent-cache')(request, {
+	cacheServiceConfig: {},
+	cacheModuleConfig: [
+		{
+			type: 'node-cache'
+			defaultExpiration: 7200
+		}
+	]
+})
+
 Jimp = require 'jimp'
 config = require './config.json'
 getMac = require('getmac').getMac
@@ -115,6 +125,16 @@ getMac (err,myMacAddress) ->
 	pubnub.subscribe({
 		channel: myMacAddress
 		message: processWork
+	})
+
+	warmCache = (images) ->
+		_.each images, (img) ->
+			request.get(hubImagesUrl + img.original_img).end (err, res) ->
+				console.log("Got image " + img.original_img)
+
+	pubnub.subscribe({
+		channel: 'images'
+		message: warmCache
 	})
 
 	console.log('Ready.')
