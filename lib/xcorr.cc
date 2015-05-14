@@ -1,12 +1,15 @@
 #include <node.h>
 #include <node_buffer.h>
 #include <math.h>
+#include <cstdlib>
+#include <cstdio>
+#include <ctime>
 
 using namespace v8;
 
 // TO-DO: implement actual correlation
 double calculateXCorr(char * image1, char * image2, size_t n) {
-	return 0.53;
+	return (double) rand() / (float) RAND_MAX ;
 }
 
 void xcorr(const FunctionCallbackInfo<Value>& args) {
@@ -33,6 +36,7 @@ void xcorr(const FunctionCallbackInfo<Value>& args) {
 }
 
 void init(Handle<Object> exports, Handle<Object> module) {
+	srand(time(NULL));
 	NODE_SET_METHOD(module, "exports", xcorr);
 }
 
