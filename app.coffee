@@ -18,6 +18,9 @@ _ = require 'lodash'
 console.log('Starting up...')
 getMac (err,myMacAddress) ->
 
+	if process.env.MOCK_MAC
+		myMacAddress = process.env.MOCK_MAC
+
 	hubUrl = 'http://localhost:8080/'
 	hubImagesUrl = hubUrl + 'images/'
 
@@ -70,7 +73,6 @@ getMac (err,myMacAddress) ->
 		amountDone = 0
 		whenDone = () ->
 			console.log('Done!')
-			console.log(results)
 			theResult = _.max(results, 'value')
 			theResult.device = myMacAddress
 			theResult.elapsedTime = Date.now() - startTime
@@ -110,14 +112,11 @@ getMac (err,myMacAddress) ->
 				progress = percent
 
 		correlate = (ind, img, image1) ->
-			console.log('Correlating #' + (ind+1))
 			image2URL = hubImagesUrl + img.original_img
 			request.get(image2URL).end (req, res) ->
 				image2Buffer = res.body
 				new Jimp image2Buffer, (err, image2) ->
-					console.log('Result for #' + (ind + 1))
 					result = xcorr(image1.bitmap.data, image2.bitmap.data)
-					console.log(result)
 					results[ind] = {
 						value: result
 						name: img.personName
@@ -147,9 +146,22 @@ getMac (err,myMacAddress) ->
 	})
 
 	warmCache = (images) ->
-		_.each images, (img) ->
+		pubnub.state({
+			channel: 'work'
+			state: {
+				status: 'Warming up'
+			}
+		})
+		_.each images, (img, ind) ->
 			request.get(hubImagesUrl + img.original_img).end (err, res) ->
 				console.log("Got image " + img.original_img)
+				if ind == (images.length - 1)
+					pubnub.state({
+						channel: 'work'
+						state: {
+							status: 'Idle'
+						}
+					})
 
 	pubnub.subscribe({
 		channel: 'images'
