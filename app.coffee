@@ -27,16 +27,21 @@ getMac (err,myMacAddress) ->
 	console.log('Registering...')
 	request.get('http://ipinfo.io/json').end (err, loc) ->
 		location = loc.body
-		request.post(hubUrl + 'api/devices').send({resinId: process.env.RESIN_DEVICE_UUID, macAddress: myMacAddress, location}).end (err, res) ->
+		request.post(hubUrl + 'api/devices')
+		.send({
+			resinId: process.env.RESIN_DEVICE_UUID
+			macAddress: myMacAddress
+			location
+		}).end (err, res) ->
 			if err
 				console.log(err)
 			else
 				console.log(res.body)
 
-	pubnub = require("pubnub")({
-	    publish_key   : config.publish_key,
-	    subscribe_key : config.subscribe_key,
-	    uuid: myMacAddress
+	pubnub = require('pubnub')({
+		publish_key: config.publish_key
+		subscribe_key: config.subscribe_key
+		uuid: myMacAddress
 	})
 
 	console.log('Subscribing...')
@@ -47,7 +52,7 @@ getMac (err,myMacAddress) ->
 			status: 'Idle'
 			chunkId: null
 		},
-		message: (m) -> console.log("new work! " + m)
+		message: (m) -> console.log(m)
 	})
 
 	processWork = (work) ->
@@ -71,7 +76,7 @@ getMac (err,myMacAddress) ->
 		targetImage = work.targetImage
 		results = []
 		amountDone = 0
-		whenDone = () ->
+		whenDone = ->
 			console.log('Done!')
 			theResult = _.max(results, 'value')
 			theResult.device = myMacAddress
@@ -137,8 +142,6 @@ getMac (err,myMacAddress) ->
 				_.each work.images, (img) ->
 					correlate(ind, img, image1)
 					ind += 1
-					
-
 
 	pubnub.subscribe({
 		channel: myMacAddress
@@ -154,7 +157,7 @@ getMac (err,myMacAddress) ->
 		})
 		_.each images, (img, ind) ->
 			request.get(hubImagesUrl + img.original_img).end (err, res) ->
-				console.log("Got image " + img.original_img)
+				console.log('Got image ' + img.original_img)
 				if ind == (images.length - 1)
 					pubnub.state({
 						channel: 'work'
