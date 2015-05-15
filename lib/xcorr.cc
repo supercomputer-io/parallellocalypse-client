@@ -4,12 +4,24 @@
 #include <cstdlib>
 #include <cstdio>
 #include <ctime>
+#include <limits>
 
 using namespace v8;
 
 // TO-DO: implement actual correlation
 double calculateXCorr(char * image1, char * image2, size_t n) {
-	return (double) rand() / (float) RAND_MAX ;
+	
+	double result = 0.0;
+
+	for(size_t i = 0; i < (4 * n); i++) {
+		for(size_t j = 0; j < (4 * n); j++) {
+			result +=  ((double)*(image1+i+n*j))*((double)*(image2+i+n*j));
+		}
+	}
+
+	result /= (4*n)^2;
+
+	return result;
 }
 
 void xcorr(const FunctionCallbackInfo<Value>& args) {

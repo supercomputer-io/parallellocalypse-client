@@ -126,6 +126,7 @@ getMac (err,myMacAddress) ->
 						value: result
 						name: img.personName
 						imageId: img.id
+						imageUrl: img.original_img
 						chunkId: work.chunkId
 					}
 					amountDone += 1
