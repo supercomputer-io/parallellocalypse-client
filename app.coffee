@@ -22,8 +22,8 @@ getMac (err,myMacAddress) ->
 	if process.env.MOCK_MAC
 		myMacAddress = process.env.MOCK_MAC
 
-	hubUrl = 'http://localhost:8080/'
-	hubImagesUrl = hubUrl + 'images/'
+	hubUrl = config.hubUrl or 'http://localhost:8080/'
+	hubImagesUrl = config.hubImagesUrl or hubUrl + 'images/'
 
 	console.log('Registering...')
 	request.get('http://ipinfo.io/json').end (err, loc) ->
