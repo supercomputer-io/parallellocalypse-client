@@ -18,6 +18,7 @@
   },
   "homepage": "https://github.com/pcarranzav/parallellocalypse-client",
   "dependencies": {
+    "bcrypt-nodejs": "0.0.3",
     "coffee-script": "^1.9.2",
     "getmac": "^1.0.7",
     "jimp": "^0.2.3",

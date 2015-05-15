@@ -1,5 +1,6 @@
 xcorr = require './build/Release/xcorr'
 request = require 'superagent'
+bcrypt = require 'bcrypt-nodejs'
 require('superagent-cache')(request, {
 	cacheServiceConfig: {},
 	cacheModuleConfig: [
@@ -11,7 +12,7 @@ require('superagent-cache')(request, {
 })
 
 Jimp = require 'jimp'
-config = require './config.json'
+config = require './config'
 getMac = require('getmac').getMac
 _ = require 'lodash'
 
@@ -31,6 +32,7 @@ getMac (err,myMacAddress) ->
 		.send({
 			resinId: process.env.RESIN_DEVICE_UUID
 			macAddress: myMacAddress
+			secret: bcrypt.hashSync(myMacAddress + config.secret)
 			location
 		}).end (err, res) ->
 			if err
