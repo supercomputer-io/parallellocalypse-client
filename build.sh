@@ -9,7 +9,7 @@ cd libelf-0.8.13 && ./configure && make && make install
 # Install COPRTHR
 cd /app
 git clone https://github.com/olajep/coprthr.git
-cd /app/coprthr && ./configure --enable-epiphany && gmake && gmake install
+cd /app/coprthr && ./configure --enable-epiphany && make && make install
 
 # Install libcoprthr_mpi
 cd /app
