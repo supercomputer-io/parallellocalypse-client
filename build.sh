@@ -21,4 +21,7 @@ cd /app
 git clone https://github.com/olajep/parallella-fft-xcorr
 cd /app/parallella-fft-xcorr && PATH=/usr/local/browndeer/bin:$PATH LD_LIBRARY_PATH=/usr/local/browndeer/lib:$LD_LIBRARY_PATH make
 
-cd /app && npm install
+cd /app
+npm install -g node-gyp
+node-gyp configure build
+npm install
