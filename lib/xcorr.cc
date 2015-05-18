@@ -42,16 +42,16 @@ void xcorr(const FunctionCallbackInfo<Value>& args) {
 	}
 
 	Local<Object> bufferObj1 = args[0]->ToObject();
-	char* image1 = node::Buffer::Data(bufferObj1);
+	unsigned char* image1 = (unsigned char *) node::Buffer::Data(bufferObj1);
 
 	Local<Object> bufferObj2 = args[1]->ToObject();
-	char* image2 = node::Buffer::Data(bufferObj2);
+	unsigned char* image2 = (unsigned char *) node::Buffer::Data(bufferObj2);
 
 	size_t n1 = node::Buffer::Length(bufferObj1);
 	size_t n2 = node::Buffer::Length(bufferObj2);
 	//double xcorrValue = calculateXCorr(image1, image2, n);
 
-	double xcorrValue;
+	float xcorrValue;
 
 	if(calculateXCorr(image1, n1, image2, n2, &xcorrValue))
 		args.GetReturnValue().Set(Number::New(isolate, xcorrValue));
