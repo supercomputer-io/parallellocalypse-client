@@ -19,7 +19,7 @@ ADD . /app
 RUN cd /app && wget http://www.browndeertechnology.com/code/bdt-libcoprthr_mpi-preview.tgz
 
 # Fix the permissions of run.sh and build.sh for pushes from windows.
-RUN chmod a+x /app/run.sh /app/build.sh
+RUN chmod a+x /app/build.sh
 
 RUN curl -sL https://deb.nodesource.com/setup | bash -
 RUN apt-get install -y build-essential nodejs
