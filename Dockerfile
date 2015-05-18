@@ -1,7 +1,7 @@
 FROM resin/armv7hf-debian:jessie
 
 RUN apt-get update \
-	&& apt-get install -y build-essential axel wget htop nano libjpeg-dev libconfig++-dev libevent-dev git gmake\
+	&& apt-get install -y build-essential axel wget htop nano libjpeg-dev libconfig++-dev libevent-dev git freebsd-glue\
 	&& apt-get clean \
         && apt-get autoremove -qqy 
 
