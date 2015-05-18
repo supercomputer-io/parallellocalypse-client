@@ -19,6 +19,6 @@ cd /app/libcoprthr_mpi && ./install.sh
 # Install the fft correlation library
 cd /app
 git clone https://github.com/olajep/parallella-fft-xcorr
-cd /app/parallella-fft-xcorr && make
+cd /app/parallella-fft-xcorr && PATH=/usr/local/browndeer/bin:$PATH LD_LIBRARY_PATH=/usr/local/browndeer/lib:$LD_LIBRARY_PATH make
 
 cd /app && npm install
