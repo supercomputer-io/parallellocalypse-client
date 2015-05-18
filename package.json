@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
+  	"postinstall": "node-gyp configure build",
     "start": "./node_modules/.bin/coffee app.coffee",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
