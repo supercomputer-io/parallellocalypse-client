@@ -9,6 +9,7 @@
 using namespace v8;
 
 // TO-DO: implement actual correlation
+/*
 double calculateXCorr(char * image1, char * image2, size_t n) {
 	
 	double result = 0.0;
@@ -23,6 +24,12 @@ double calculateXCorr(char * image1, char * image2, size_t n) {
 
 	return result;
 }
+*/
+
+// The real function from Ola's library
+bool calculateXCorr(uint8_t *jpeg1, size_t jpeg1_size,
+		    uint8_t *jpeg2, size_t jpeg2_size,
+		    float *corr);
 
 void xcorr(const FunctionCallbackInfo<Value>& args) {
 	Isolate* isolate = Isolate::GetCurrent();
@@ -40,11 +47,18 @@ void xcorr(const FunctionCallbackInfo<Value>& args) {
 	Local<Object> bufferObj2 = args[1]->ToObject();
 	char* image2 = node::Buffer::Data(bufferObj2);
 
-	size_t n = sqrt(node::Buffer::Length(bufferObj1)/4);
+	size_t n1 = node::Buffer::Length(bufferObj1);
+	size_t n2 = node::Buffer::Length(bufferObj2);
+	//double xcorrValue = calculateXCorr(image1, image2, n);
 
-	double xcorrValue = calculateXCorr(image1, image2, n);
+	double xcorrValue;
 
-	args.GetReturnValue().Set(Number::New(isolate, xcorrValue));
+	if(calculateXCorr(image1, n1, image2, n2, &xcorrValue))
+		args.GetReturnValue().Set(Number::New(isolate, xcorrValue));
+	else
+		isolate->ThrowException(Exception::TypeError(
+			String::NewFromUtf8(isolate, "Correlation failed")));
+		return;
 }
 
 void init(Handle<Object> exports, Handle<Object> module) {
