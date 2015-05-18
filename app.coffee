@@ -121,30 +121,26 @@ getMac (err,myMacAddress) ->
 		correlate = (ind, img, image1) ->
 			image2URL = hubImagesUrl + img.original_img
 			request.get(image2URL).end (req, res) ->
-				image2Buffer = res.body
-				new Jimp image2Buffer, (err, image2) ->
-					result = xcorr(image1.bitmap.data, image2.bitmap.data)
-					results[ind] = {
-						value: result
-						name: img.personName
-						imageId: img.id
-						imageUrl: img.original_img
-						chunkId: work.chunkId
-					}
-					amountDone += 1
-					onProgress(amountDone, work.workSize)
-					if(amountDone == work.workSize)
-						whenDone()
+				image2 = res.body
+				result = xcorr(image1, image2)
+				results[ind] = {
+					value: result
+					name: img.personName
+					imageId: img.id
+					imageUrl: img.original_img
+					chunkId: work.chunkId
+				}
+				amountDone += 1
+				onProgress(amountDone, work.workSize)
+				if(amountDone == work.workSize)
+					whenDone()
 
 		console.log('Getting:')
 		console.log(hubImagesUrl + work.targetImage.original_img)
 		request.get(hubImagesUrl + work.targetImage.original_img).end (req, res) ->
-			image1Buffer = res.body
-			new Jimp image1Buffer, (err, image1) ->
-				ind = 0
-				_.each work.images, (img) ->
-					correlate(ind, img, image1)
-					ind += 1
+			image1 = res.body
+			_.each work.images, (img, ind) ->
+				correlate(ind, img, image1)
 
 	pubnub.subscribe({
 		channel: myMacAddress
