@@ -23,7 +23,7 @@ getMac (err,myMacAddress) ->
 		myMacAddress = process.env.MOCK_MAC
 
 	hubUrl = config.hubUrl or 'http://localhost:8080/'
-	hubImagesUrl = config.hubImagesUrl or hubUrl + 'images/'
+	hubImagesUrl = config.hubImagesUrl or "http://parallellocalypse.s3-website-us-east-1.amazonaws.com"
 
 	console.log('Registering...')
 	request.get('http://ipinfo.io/json').end (err, loc) ->
@@ -119,7 +119,7 @@ getMac (err,myMacAddress) ->
 				progress = percent
 
 		correlate = (ind, img, image1) ->
-			image2URL = hubImagesUrl + img.original_img
+			image2URL = hubImagesUrl + img.path
 			request.get(image2URL).end (req, res) ->
 				image2 = res.body
 				result = xcorr(image1, image2)
@@ -127,7 +127,7 @@ getMac (err,myMacAddress) ->
 					value: result
 					name: img.personName
 					imageId: img.id
-					imageUrl: img.original_img
+					imageUrl: img.path
 					chunkId: work.chunkId
 				}
 				amountDone += 1
@@ -136,8 +136,8 @@ getMac (err,myMacAddress) ->
 					whenDone()
 
 		console.log('Getting:')
-		console.log(hubImagesUrl + work.targetImage.original_img)
-		request.get(hubImagesUrl + work.targetImage.original_img).end (req, res) ->
+		console.log(hubImagesUrl + work.targetImage.path)
+		request.get(hubImagesUrl + work.targetImage.path).end (req, res) ->
 			image1 = res.body
 			_.each work.images, (img, ind) ->
 				correlate(ind, img, image1)
@@ -155,8 +155,8 @@ getMac (err,myMacAddress) ->
 			}
 		})
 		_.each images, (img, ind) ->
-			request.get(hubImagesUrl + img.original_img).end (err, res) ->
-				console.log('Got image ' + img.original_img)
+			request.get(hubImagesUrl + img.path).end (err, res) ->
+				console.log('Got image ' + img.path)
 				if ind == (images.length - 1)
 					pubnub.state({
 						channel: 'work'
