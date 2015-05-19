@@ -28,5 +28,8 @@
     "request": "^2.55.0",
     "superagent": "^1.2.0",
     "superagent-cache": "^0.1.17"
+  },
+  "config": {
+    "unsafe-perm":true
   }
 }
