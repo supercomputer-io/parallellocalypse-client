@@ -30,7 +30,7 @@ getMac (err,myMacAddress) ->
 		myMacAddress = process.env.MOCK_MAC
 
 	hubUrl = config.hubUrl or 'http://localhost:8080/'
-	hubImagesUrl = config.hubImagesUrl or "http://parallellocalypse.s3-website-us-east-1.amazonaws.com"
+	hubImagesUrl = config.hubImagesUrl or 'http://parallellocalypse.s3-website-us-east-1.amazonaws.com'
 
 	console.log('Registering...')
 	request.get('http://ipinfo.io/json').end (err, loc) ->
