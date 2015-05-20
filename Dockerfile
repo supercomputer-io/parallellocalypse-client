@@ -29,4 +29,4 @@ RUN apt-get install -y build-essential nodejs
 RUN bash -c "source /opt/adapteva/esdk/setup.sh && ./app/build.sh"
 
 # Run this on startup.
-CMD bash -c "source /opt/adapteva/esdk/setup.sh && cd /app && npm start"
+CMD bash /app/run.sh
