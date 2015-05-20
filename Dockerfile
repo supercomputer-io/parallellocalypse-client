@@ -26,14 +26,14 @@ RUN cd /app && wget http://www.mr511.de/software/libelf-0.8.13.tar.gz \
 	&& cd libelf-0.8.13 && ./configure && make && make install
 
 # Build COPRTHR
-RUN cd /app \
+RUN bash -c "source /opt/adapteva/esdk/setup.sh && cd /app \
 	&& git clone https://github.com/olajep/coprthr.git \
-	&& cd /app/coprthr && ./configure --enable-epiphany && make && make install
+	&& cd /app/coprthr && ./configure --enable-epiphany && make && make install"
 
 # Add COPRTHR MPI
-RUN cd /app && wget http://www.browndeertechnology.com/code/bdt-libcoprthr_mpi-preview.tgz \
+RUN bash -c "source /opt/adapteva/esdk/setup.sh && cd /app && wget http://www.browndeertechnology.com/code/bdt-libcoprthr_mpi-preview.tgz \
 	&& tar -xf bdt-libcoprthr_mpi-preview.tgz \
-	&& cd /app/libcoprthr_mpi && ./install.sh
+	&& cd /app/libcoprthr_mpi && ./install.sh"
 
 # Clone the FFT correlation repo
 RUN cd /app && git clone https://github.com/olajep/parallella-fft-xcorr
