@@ -35,7 +35,7 @@ void xcorr(const FunctionCallbackInfo<Value>& args) {
 	Isolate* isolate = Isolate::GetCurrent();
 	HandleScope scope(isolate);
 
-	if (args.Length() < 2) {
+	if (args.Length() < 3) {
 		isolate->ThrowException(Exception::TypeError(
 			String::NewFromUtf8(isolate, "Wrong number of arguments")));
 		return;
@@ -55,6 +55,11 @@ void xcorr(const FunctionCallbackInfo<Value>& args) {
 
 	if(calculateXCorr(image1, n1, image2, n2, &xcorrValue))
 		args.GetReturnValue().Set(Number::New(isolate, xcorrValue));
+	
+		Local<Function> cb = Local<Function>::Cast(args[2]);
+		const unsigned argc = 1;
+		Local<Value> argv[argc] = { Number::New(isolate, xcorrValue) };
+		cb->Call(isolate->GetCurrentContext()->Global(), argc, argv);
 	else
 		isolate->ThrowException(Exception::TypeError(
 			String::NewFromUtf8(isolate, "Correlation failed")));

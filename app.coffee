@@ -1,4 +1,8 @@
-xcorr = require './build/Release/xcorr'
+if process.env.MOCK_MAC
+	xcorr = require './lib/mock_xcorr'
+else
+	xcorr = require './build/Release/xcorr'
+
 request = require 'superagent'
 bcrypt = require 'bcrypt-nodejs'
 require('superagent-cache')(request, {
@@ -11,12 +15,15 @@ require('superagent-cache')(request, {
 	]
 })
 
-Jimp = require 'jimp'
 config = require './config'
 getMac = require('getmac').getMac
 _ = require 'lodash'
 
 console.log('Starting up...')
+
+#TO-DO: load from file
+dbimages = {}
+
 getMac (err,myMacAddress) ->
 
 	if process.env.MOCK_MAC
@@ -51,7 +58,7 @@ getMac (err,myMacAddress) ->
 		channel: 'work',
 		heartbeat: 10,
 		state: {
-			status: 'Idle'
+			status: 'Started'
 			chunkId: null
 		},
 		message: (m) -> console.log(m)
@@ -83,7 +90,7 @@ getMac (err,myMacAddress) ->
 			theResult = _.max(results, 'value')
 			theResult.device = myMacAddress
 			theResult.elapsedTime = Date.now() - startTime
-
+			console.log(theResult)
 			pubnub.publish({
 				channel: 'working'
 				message: {
@@ -119,15 +126,14 @@ getMac (err,myMacAddress) ->
 				progress = percent
 
 		correlate = (ind, img, image1) ->
-			image2URL = hubImagesUrl + img.path
-			request.get(image2URL).end (req, res) ->
-				image2 = res.body
-				result = xcorr(image1, image2)
+			
+			image2 = dbimages[img.uuid]
+			xcorr image1, image2.data, (result) ->
 				results[ind] = {
 					value: result
-					name: img.personName
-					imageId: img.id
-					imageUrl: img.path
+					name: image2.image.personName
+					imageId: image2.image.id
+					imageUrl: image2.image.path
 					chunkId: work.chunkId
 				}
 				amountDone += 1
@@ -136,8 +142,8 @@ getMac (err,myMacAddress) ->
 					whenDone()
 
 		console.log('Getting:')
-		console.log(hubImagesUrl + work.targetImage.path)
-		request.get(hubImagesUrl + work.targetImage.path).end (req, res) ->
+		console.log(hubImagesUrl + work.targetImage)
+		request.get(hubImagesUrl + work.targetImage).end (req, res) ->
 			image1 = res.body
 			_.each work.images, (img, ind) ->
 				correlate(ind, img, image1)
@@ -154,9 +160,17 @@ getMac (err,myMacAddress) ->
 				status: 'Warming up'
 			}
 		})
+		console.log("Warming cache")
+		console.log(images)
 		_.each images, (img, ind) ->
 			request.get(hubImagesUrl + img.path).end (err, res) ->
+				if err
+					throw err
 				console.log('Got image ' + img.path)
+				dbimages[img.uuid] = {
+					image: img
+					data: res.body
+				}
 				if ind == (images.length - 1)
 					pubnub.state({
 						channel: 'work'
