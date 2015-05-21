@@ -26,10 +26,13 @@ double calculateXCorr(char * image1, char * image2, size_t n) {
 }
 */
 
-// The real function from Ola's library
-bool calculateXCorr(uint8_t *jpeg1, size_t jpeg1_size,
+extern "C" {
+	// The real function from Ola's library
+	bool calculateXCorr(uint8_t *jpeg1, size_t jpeg1_size,
 		    uint8_t *jpeg2, size_t jpeg2_size,
 		    float *corr);
+}
+
 
 Handle<Value> xcorr(const Arguments& args) {
 	HandleScope scope;
