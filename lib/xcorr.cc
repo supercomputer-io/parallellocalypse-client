@@ -31,14 +31,13 @@ bool calculateXCorr(uint8_t *jpeg1, size_t jpeg1_size,
 		    uint8_t *jpeg2, size_t jpeg2_size,
 		    float *corr);
 
-void xcorr(const FunctionCallbackInfo<Value>& args) {
-	Isolate* isolate = Isolate::GetCurrent();
-	HandleScope scope(isolate);
+Handle<Value> xcorr(const Arguments& args) {
+	HandleScope scope;
 
 	if (args.Length() < 3) {
-		isolate->ThrowException(Exception::TypeError(
-			String::NewFromUtf8(isolate, "Wrong number of arguments")));
-		return;
+		ThrowException(Exception::TypeError(
+			String::New("Wrong number of arguments")));
+		return scope.Close(Undefined());
 	}
 
 	Local<Object> bufferObj1 = args[0]->ToObject();
@@ -54,21 +53,19 @@ void xcorr(const FunctionCallbackInfo<Value>& args) {
 	float xcorrValue;
 
 	if(calculateXCorr(image1, n1, image2, n2, &xcorrValue))
-		args.GetReturnValue().Set(Number::New(isolate, xcorrValue));
-	
 		Local<Function> cb = Local<Function>::Cast(args[2]);
 		const unsigned argc = 1;
-		Local<Value> argv[argc] = { Number::New(isolate, xcorrValue) };
-		cb->Call(isolate->GetCurrentContext()->Global(), argc, argv);
+		Local<Value> argv[argc] = { Number::New(xcorrValue) };
+		cb->Call(Context::GetCurrent()->Global(), argc, argv);
 	else
-		isolate->ThrowException(Exception::TypeError(
-			String::NewFromUtf8(isolate, "Correlation failed")));
-		return;
+		ThrowException(Exception::TypeError(
+			String::New("Correlation failed")));
+	
+	return scope.Close(Undefined());
 }
 
-void init(Handle<Object> exports, Handle<Object> module) {
-	srand(time(NULL));
-	NODE_SET_METHOD(module, "exports", xcorr);
+void Init(Handle<Object> exports) {
+	exports->Set(String::NewSymbol("xcorr"),
+    	FunctionTemplate::New(xcorr)->GetFunction());
 }
-
-NODE_MODULE(xcorr, init)
+NODE_MODULE(xcorr, Init)
