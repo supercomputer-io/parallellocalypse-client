@@ -153,7 +153,7 @@ getMac (err,myMacAddress) ->
 		message: processWork
 	})
 
-	warmCache = (images) ->
+	warmCache = (data) ->
 		pubnub.state({
 			channel: 'work'
 			state: {
@@ -161,6 +161,7 @@ getMac (err,myMacAddress) ->
 			}
 		})
 		console.log("Warming cache")
+		images = data.images
 		_.each images, (img, ind) ->
 			request.get(hubImagesUrl + img.path).end (err, res) ->
 				if err
@@ -171,12 +172,13 @@ getMac (err,myMacAddress) ->
 				}
 				if ind == (images.length - 1)
 					console.log('Done')
-					pubnub.state({
-						channel: 'work'
-						state: {
-							status: 'Idle'
-						}
-					})
+					if data.page == data.nPages
+						pubnub.state({
+							channel: 'work'
+							state: {
+								status: 'Idle'
+							}
+						})
 
 	pubnub.subscribe({
 		channel: 'images'
