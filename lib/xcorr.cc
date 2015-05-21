@@ -52,14 +52,16 @@ Handle<Value> xcorr(const Arguments& args) {
 
 	float xcorrValue;
 
-	if(calculateXCorr(image1, n1, image2, n2, &xcorrValue))
+	if(calculateXCorr(image1, n1, image2, n2, &xcorrValue)) {
 		Local<Function> cb = Local<Function>::Cast(args[2]);
 		const unsigned argc = 1;
 		Local<Value> argv[argc] = { Number::New(xcorrValue) };
 		cb->Call(Context::GetCurrent()->Global(), argc, argv);
-	else
+	}
+	else {
 		ThrowException(Exception::TypeError(
 			String::New("Correlation failed")));
+	}
 	
 	return scope.Close(Undefined());
 }
