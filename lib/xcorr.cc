@@ -66,8 +66,8 @@ Handle<Value> xcorr(const Arguments& args) {
 	return scope.Close(Undefined());
 }
 
-void Init(Handle<Object> exports) {
-	exports->Set(String::NewSymbol("xcorr"),
+void Init(Handle<Object> exports, Handle<Object> module) {
+	module->Set(String::NewSymbol("exports"),
     	FunctionTemplate::New(xcorr)->GetFunction());
 }
 NODE_MODULE(xcorr, Init)

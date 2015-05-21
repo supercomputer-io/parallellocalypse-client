@@ -161,17 +161,16 @@ getMac (err,myMacAddress) ->
 			}
 		})
 		console.log("Warming cache")
-		console.log(images)
 		_.each images, (img, ind) ->
 			request.get(hubImagesUrl + img.path).end (err, res) ->
 				if err
 					throw err
-				console.log('Got image ' + img.path)
 				dbimages[img.uuid] = {
 					image: img
 					data: res.body
 				}
 				if ind == (images.length - 1)
+					console.log('Done')
 					pubnub.state({
 						channel: 'work'
 						state: {
