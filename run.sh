@@ -9,6 +9,7 @@ if [ ! -f /app/installed.txt ]; then
 	install -m 644 /app/parallella-fft-xcorr/libfft-demo.so /usr/lib/
 	ldconfig /usr/lib /usr/local/browndeer/lib
 
+	cp /app/parallella-fft-xcorr/device.cbin.3.e32 /app/
 	echo "Installing app"
 	cd /app && npm install --unsafe-perm
 
