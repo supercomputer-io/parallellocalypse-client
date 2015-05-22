@@ -10,7 +10,7 @@ RUN curl -sL https://deb.nodesource.com/setup | bash -
 RUN apt-get install -y build-essential nodejs
 
 RUN mkdir -p /opt/adapteva && cd /opt/adapteva \
-	&& axel -n 10 http://ftp.parallella.org/esdk/esdk.2014.11_linux_armv7l.tar.gz && tar -xf esdk.2014.11_linux_armv7l.tar.gz && rm esdk.2014.11_linux_armv7l.tar.gz \
+	&& axel -n 10 http://ftp.parallella.org/esdk/beta/esdk.2014.11.20150522_linux_armv7l.tar.gz && tar -xf esdk.2014.11.20150522_linux_armv7l.tar.gz && rm esdk.2014.11.20150522_linux_armv7l.tar.gz \
 	&& ln -sTf /opt/adapteva/esdk.2014.11 /opt/adapteva/esdk
 
 ENV EPIPHANY_HOME /opt/adapteva/esdk
@@ -28,7 +28,8 @@ RUN cd /app && wget http://www.mr511.de/software/libelf-0.8.13.tar.gz \
 # Build COPRTHR
 RUN bash -c "source /opt/adapteva/esdk/setup.sh && cd /app \
 	&& git clone https://github.com/olajep/coprthr.git \
-	&& cd /app/coprthr && ./configure --enable-epiphany && make && make install"
+	&& cd /app/coprthr && && git checkout parallellocalypse && ./configure --enable-epiphany \
+	&& make && make install"
 
 # Add COPRTHR MPI
 RUN bash -c "source /opt/adapteva/esdk/setup.sh && cd /app && wget http://www.browndeertechnology.com/code/bdt-libcoprthr_mpi-preview.tgz \
