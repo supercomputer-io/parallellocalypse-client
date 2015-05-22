@@ -37,7 +37,8 @@ RUN bash -c "source /opt/adapteva/esdk/setup.sh && cd /app && wget http://www.br
 	&& cd /app/libcoprthr_mpi && ./install.sh"
 
 # Clone the FFT correlation repo
-RUN cd /app && git clone https://github.com/olajep/parallella-fft-xcorr
+RUN cd /app && git clone https://github.com/olajep/parallella-fft-xcorr \
+	&& cd /app/parallella-fft-xcorr && git checkout c2bee839535bcff868cdeb7c1c5f735a60d02f44
 
 ADD . /app
 
