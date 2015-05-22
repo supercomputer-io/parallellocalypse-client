@@ -28,7 +28,7 @@ RUN cd /app && wget http://www.mr511.de/software/libelf-0.8.13.tar.gz \
 # Build COPRTHR
 RUN bash -c "source /opt/adapteva/esdk/setup.sh && cd /app \
 	&& git clone https://github.com/olajep/coprthr.git \
-	&& cd /app/coprthr && && git checkout parallellocalypse && ./configure --enable-epiphany \
+	&& cd /app/coprthr && git checkout parallellocalypse && ./configure --enable-epiphany \
 	&& make && make install"
 
 # Add COPRTHR MPI
