@@ -15,16 +15,22 @@ ENV ESDK_VERSION 2014.11.20150522
 RUN mkdir -p $EPIPHANY_HOME \
     && curl -sL http://ftp.parallella.org/esdk/beta/esdk.$ESDK_VERSION_linux_armv7l.tar.gz | tar xz -C $EPIPHANY_HOME --strip-components=1
 
+# Build libelf
+ENV LIBELF_VERSION 0.8.13
+
+RUN mkdir -p /usr/src/libelf \
+    && curl -sL http://www.mr511.de/software/libelf-$LIBELF_VERSION.tar.gz | tar xz -C /usr/src/libelf --strip-components=1 \
+    && cd /usr/src/libelf \
+    && ./configure \
+    && make \
+    && make install \
+    && rm -rf /usr/src/libelf
+
 
 # Enable default setup from webterminal
 RUN sed -i 's/\/bin\/sh/\/bin\/bash/g' /opt/adapteva/esdk/setup.sh && echo "source /opt/adapteva/esdk/setup.sh" >> ~/.bashrc
 
 RUN mkdir -p /app
-
-# Build libelf 0.8.13
-RUN cd /app && wget http://www.mr511.de/software/libelf-0.8.13.tar.gz \
-	&& tar -xf libelf-0.8.13.tar.gz \
-	&& cd libelf-0.8.13 && ./configure && make && make install
 
 # Build COPRTHR
 RUN bash -c "source /opt/adapteva/esdk/setup.sh && cd /app \
