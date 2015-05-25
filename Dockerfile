@@ -58,4 +58,4 @@ RUN curl -sL https://github.com/olajep/parallella-fft-xcorr/archive/$PARALLELLA_
 COPY . /usr/src/app
 
 # Run this on startup.
-CMD bash /usr/src/app/run.sh
+CMD [ "/usr/src/app/run.sh" ]
