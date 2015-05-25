@@ -24,9 +24,17 @@
     "jimp": "^0.2.3",
     "lodash": "^3.8.0",
     "node-cache": "^2.1.1",
+    "node-gyp": "^1.0.3",
     "pubnub": "^3.7.10",
     "request": "^2.55.0",
     "superagent": "^1.2.0",
     "superagent-cache": "^0.1.17"
+  },
+  "config": {
+    "unsafe-perm": true
+  },
+  "engines": {
+  	"node": "0.10.x",
+  	"npm": "1.4.x"
   }
 }
