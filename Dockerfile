@@ -10,10 +10,10 @@ RUN apt-get update \
 
 # Install epiphany SDK
 ENV EPIPHANY_HOME /opt/adapteva/esdk
-ENV ESDK_VERSION 2014.11.20150522
+ENV ESDK_VERSION 2015.1_linux_armv7l-20150523
 
 RUN mkdir -p $EPIPHANY_HOME \
-    && curl -sL http://ftp.parallella.org/esdk/beta/esdk.$ESDK_VERSION_linux_armv7l.tar.gz | tar xz -C $EPIPHANY_HOME --strip-components=1
+    && curl -sL http://ftp.parallella.org/esdk/beta/esdk.$ESDK_VERSION.tar.gz | tar xz -C $EPIPHANY_HOME --strip-components=1
 
 # Build libelf
 ENV LIBELF_VERSION 0.8.13
