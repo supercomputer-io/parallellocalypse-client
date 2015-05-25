@@ -1,5 +1,6 @@
+#!/bin/bash
 
-set -e
+set -o errexit
 
 source /opt/adapteva/esdk/setup.sh
 
