@@ -8,11 +8,13 @@ RUN apt-get update \
     libconfig++-dev \
   && rm -rf /var/lib/apt/lists/*
 
-RUN mkdir -p /opt/adapteva && cd /opt/adapteva \
-	&& axel -n 10 http://ftp.parallella.org/esdk/beta/esdk.2014.11.20150522_linux_armv7l.tar.gz && tar -xf esdk.2014.11.20150522_linux_armv7l.tar.gz && rm esdk.2014.11.20150522_linux_armv7l.tar.gz \
-	&& ln -sTf /opt/adapteva/esdk.2014.11 /opt/adapteva/esdk
-
+# Install epiphany SDK
 ENV EPIPHANY_HOME /opt/adapteva/esdk
+ENV ESDK_VERSION 2014.11.20150522
+
+RUN mkdir -p $EPIPHANY_HOME \
+    && curl -sL http://ftp.parallella.org/esdk/beta/esdk.$ESDK_VERSION_linux_armv7l.tar.gz | tar xz -C $EPIPHANY_HOME --strip-components=1
+
 
 # Enable default setup from webterminal
 RUN sed -i 's/\/bin\/sh/\/bin\/bash/g' /opt/adapteva/esdk/setup.sh && echo "source /opt/adapteva/esdk/setup.sh" >> ~/.bashrc
