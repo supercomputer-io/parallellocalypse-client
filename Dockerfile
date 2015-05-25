@@ -38,9 +38,6 @@ RUN . /opt/adapteva/esdk/setup.sh \
     && make install \
     && rm -rf /usr/src/libcoprthr
 
-# Enable default setup from webterminal
-RUN sed -i 's/\/bin\/sh/\/bin\/bash/g' /opt/adapteva/esdk/setup.sh && echo "source /opt/adapteva/esdk/setup.sh" >> ~/.bashrc
-
 RUN mkdir -p /app
 
 # Install libcoprthr_mpi
