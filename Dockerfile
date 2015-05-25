@@ -22,7 +22,7 @@ RUN mkdir -p /usr/src/libelf \
     && curl -sL http://www.mr511.de/software/libelf-$LIBELF_VERSION.tar.gz | tar xz -C /usr/src/libelf --strip-components=1 \
     && cd /usr/src/libelf \
     && ./configure \
-    && make \
+    && make -j $(nproc) \
     && make install \
     && rm -rf /usr/src/libelf
 
