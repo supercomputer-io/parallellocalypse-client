@@ -26,17 +26,23 @@ RUN mkdir -p /usr/src/libelf \
     && make install \
     && rm -rf /usr/src/libelf
 
+# Build libcoprthr
+ENV LIBCOPRTHR_VERSION parallellocalypse
+
+RUN . /opt/adapteva/esdk/setup.sh \
+    && mkdir -p /usr/src/libcoprthr \
+    && curl -sL https://github.com/olajep/coprthr/archive/$LIBCOPRTHR_VERSION.tar.gz | tar xz -C /usr/src/libcoprthr --strip-components=1 \
+    && cd /usr/src/libcoprthr \
+    && ./configure --enable-epiphany \
+    && make \
+    && make install \
+    && rm -rf /usr/src/libcoprthr
 
 # Enable default setup from webterminal
 RUN sed -i 's/\/bin\/sh/\/bin\/bash/g' /opt/adapteva/esdk/setup.sh && echo "source /opt/adapteva/esdk/setup.sh" >> ~/.bashrc
 
 RUN mkdir -p /app
 
-# Build COPRTHR
-RUN bash -c "source /opt/adapteva/esdk/setup.sh && cd /app \
-	&& git clone https://github.com/olajep/coprthr.git \
-	&& cd /app/coprthr && git checkout parallellocalypse && ./configure --enable-epiphany \
-	&& make && make install"
 
 # Add COPRTHR MPI
 RUN bash -c "source /opt/adapteva/esdk/setup.sh && cd /app && wget http://www.browndeertechnology.com/code/bdt-libcoprthr_mpi-preview.tgz \
