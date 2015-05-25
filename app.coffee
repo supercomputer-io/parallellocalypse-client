@@ -1,4 +1,8 @@
-xcorr = require './build/Release/xcorr'
+if process.env.MOCK_MAC
+	xcorr = require './lib/mock_xcorr'
+else
+	xcorr = require './build/Release/xcorr'
+
 request = require 'superagent'
 bcrypt = require 'bcrypt-nodejs'
 require('superagent-cache')(request, {
@@ -11,19 +15,22 @@ require('superagent-cache')(request, {
 	]
 })
 
-Jimp = require 'jimp'
 config = require './config'
 getMac = require('getmac').getMac
 _ = require 'lodash'
 
 console.log('Starting up...')
+
+#TO-DO: load from file
+dbimages = {}
+
 getMac (err,myMacAddress) ->
 
 	if process.env.MOCK_MAC
 		myMacAddress = process.env.MOCK_MAC
 
 	hubUrl = config.hubUrl or 'http://localhost:8080/'
-	hubImagesUrl = config.hubImagesUrl or hubUrl + 'images/'
+	hubImagesUrl = config.hubImagesUrl or 'http://parallellocalypse.s3-website-us-east-1.amazonaws.com'
 
 	console.log('Registering...')
 	request.get('http://ipinfo.io/json').end (err, loc) ->
@@ -51,7 +58,7 @@ getMac (err,myMacAddress) ->
 		channel: 'work',
 		heartbeat: 10,
 		state: {
-			status: 'Idle'
+			status: 'Started'
 			chunkId: null
 		},
 		message: (m) -> console.log(m)
@@ -83,7 +90,7 @@ getMac (err,myMacAddress) ->
 			theResult = _.max(results, 'value')
 			theResult.device = myMacAddress
 			theResult.elapsedTime = Date.now() - startTime
-
+			console.log(theResult)
 			pubnub.publish({
 				channel: 'working'
 				message: {
@@ -119,55 +126,59 @@ getMac (err,myMacAddress) ->
 				progress = percent
 
 		correlate = (ind, img, image1) ->
-			image2URL = hubImagesUrl + img.original_img
-			request.get(image2URL).end (req, res) ->
-				image2Buffer = res.body
-				new Jimp image2Buffer, (err, image2) ->
-					result = xcorr(image1.bitmap.data, image2.bitmap.data)
-					results[ind] = {
-						value: result
-						name: img.personName
-						imageId: img.id
-						imageUrl: img.original_img
-						chunkId: work.chunkId
-					}
-					amountDone += 1
-					onProgress(amountDone, work.workSize)
-					if(amountDone == work.workSize)
-						whenDone()
+			
+			image2 = dbimages[img.uuid]
+			xcorr image1, image2.data, (result) ->
+				results[ind] = {
+					value: result
+					name: image2.image.personName
+					imageId: image2.image.id
+					imageUrl: image2.image.path
+					chunkId: work.chunkId
+				}
+				amountDone += 1
+				onProgress(amountDone, work.workSize)
+				if(amountDone == work.workSize)
+					whenDone()
 
 		console.log('Getting:')
-		console.log(hubImagesUrl + work.targetImage.original_img)
-		request.get(hubImagesUrl + work.targetImage.original_img).end (req, res) ->
-			image1Buffer = res.body
-			new Jimp image1Buffer, (err, image1) ->
-				ind = 0
-				_.each work.images, (img) ->
-					correlate(ind, img, image1)
-					ind += 1
+		console.log(hubImagesUrl + work.targetImage)
+		request.get(hubImagesUrl + work.targetImage).end (req, res) ->
+			image1 = res.body
+			_.each work.images, (img, ind) ->
+				correlate(ind, img, image1)
 
 	pubnub.subscribe({
 		channel: myMacAddress
 		message: processWork
 	})
 
-	warmCache = (images) ->
+	warmCache = (data) ->
 		pubnub.state({
 			channel: 'work'
 			state: {
 				status: 'Warming up'
 			}
 		})
+		console.log("Warming cache")
+		images = data.images
 		_.each images, (img, ind) ->
-			request.get(hubImagesUrl + img.original_img).end (err, res) ->
-				console.log('Got image ' + img.original_img)
+			request.get(hubImagesUrl + img.path).end (err, res) ->
+				if err
+					throw err
+				dbimages[img.uuid] = {
+					image: img
+					data: res.body
+				}
 				if ind == (images.length - 1)
-					pubnub.state({
-						channel: 'work'
-						state: {
-							status: 'Idle'
-						}
-					})
+					console.log('Done')
+					if data.page == data.nPages
+						pubnub.state({
+							channel: 'work'
+							state: {
+								status: 'Idle'
+							}
+						})
 
 	pubnub.subscribe({
 		channel: 'images'

@@ -9,6 +9,7 @@
 using namespace v8;
 
 // TO-DO: implement actual correlation
+/*
 double calculateXCorr(char * image1, char * image2, size_t n) {
 	
 	double result = 0.0;
@@ -23,33 +24,53 @@ double calculateXCorr(char * image1, char * image2, size_t n) {
 
 	return result;
 }
+*/
 
-void xcorr(const FunctionCallbackInfo<Value>& args) {
-	Isolate* isolate = Isolate::GetCurrent();
-	HandleScope scope(isolate);
+extern "C" {
+	// The real function from Ola's library
+	bool calculateXCorr(uint8_t *jpeg1, size_t jpeg1_size,
+		    uint8_t *jpeg2, size_t jpeg2_size,
+		    float *corr);
+}
 
-	if (args.Length() < 2) {
-		isolate->ThrowException(Exception::TypeError(
-			String::NewFromUtf8(isolate, "Wrong number of arguments")));
-		return;
+
+Handle<Value> xcorr(const Arguments& args) {
+	HandleScope scope;
+
+	if (args.Length() < 3) {
+		ThrowException(Exception::TypeError(
+			String::New("Wrong number of arguments")));
+		return scope.Close(Undefined());
 	}
 
 	Local<Object> bufferObj1 = args[0]->ToObject();
-	char* image1 = node::Buffer::Data(bufferObj1);
+	unsigned char* image1 = (unsigned char *) node::Buffer::Data(bufferObj1);
 
 	Local<Object> bufferObj2 = args[1]->ToObject();
-	char* image2 = node::Buffer::Data(bufferObj2);
+	unsigned char* image2 = (unsigned char *) node::Buffer::Data(bufferObj2);
 
-	size_t n = sqrt(node::Buffer::Length(bufferObj1)/4);
+	size_t n1 = node::Buffer::Length(bufferObj1);
+	size_t n2 = node::Buffer::Length(bufferObj2);
+	//double xcorrValue = calculateXCorr(image1, image2, n);
 
-	double xcorrValue = calculateXCorr(image1, image2, n);
+	float xcorrValue;
 
-	args.GetReturnValue().Set(Number::New(isolate, xcorrValue));
+	if(calculateXCorr(image1, n1, image2, n2, &xcorrValue)) {
+		Local<Function> cb = Local<Function>::Cast(args[2]);
+		const unsigned argc = 1;
+		Local<Value> argv[argc] = { Number::New(xcorrValue) };
+		cb->Call(Context::GetCurrent()->Global(), argc, argv);
+	}
+	else {
+		ThrowException(Exception::TypeError(
+			String::New("Correlation failed")));
+	}
+	
+	return scope.Close(Undefined());
 }
 
-void init(Handle<Object> exports, Handle<Object> module) {
-	srand(time(NULL));
-	NODE_SET_METHOD(module, "exports", xcorr);
+void Init(Handle<Object> exports, Handle<Object> module) {
+	module->Set(String::NewSymbol("exports"),
+    	FunctionTemplate::New(xcorr)->GetFunction());
 }
-
-NODE_MODULE(xcorr, init)
+NODE_MODULE(xcorr, Init)
