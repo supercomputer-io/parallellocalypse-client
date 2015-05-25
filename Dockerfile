@@ -49,11 +49,12 @@ RUN . /opt/adapteva/esdk/setup.sh \
     && rm -rf /usr/src/libcoprthr_mpi
 
 # Clone the FFT correlation repo
-RUN mkdir -p /usr/src/app
-
 ENV PARALLELLA_FFT_XCORR_VERSION c2bee839535bcff868cdeb7c1c5f735a60d02f44
 
-RUN curl -sL https://github.com/olajep/parallella-fft-xcorr/archive/$PARALLELLA_FFT_XCORR_VERSION.tar.gz | tar xz -C /usr/src/app --strip-components=1
+RUN mkdir -p /usr/src/app/parallella-fft-xcorr \
+    && curl -sL https://github.com/olajep/parallella-fft-xcorr/archive/$PARALLELLA_FFT_XCORR_VERSION.tar.gz | tar xz -C /usr/src/app/parallella-fft-xcorr --strip-components=1
+
+RUN mkdir -p /usr/src/app
 
 COPY . /usr/src/app
 
