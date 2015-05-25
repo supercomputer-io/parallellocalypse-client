@@ -1,13 +1,12 @@
-FROM resin/armv7hf-debian:jessie
+FROM resin/armv7hf-node:0.10.38
 
 RUN apt-get update \
-	&& apt-get install -y axel wget htop nano libjpeg-dev libconfig++-dev\
-	libevent-dev git freebsd-glue curl python bison flex\
-	&& apt-get clean \
-        && apt-get autoremove -qqy 
-
-RUN curl -sL https://deb.nodesource.com/setup | bash -
-RUN apt-get install -y build-essential nodejs
+  && apt-get install -y \
+    bison \
+    flex \
+    freebsd-glue \
+    libconfig++-dev \
+  && rm -rf /var/lib/apt/lists/*
 
 RUN mkdir -p /opt/adapteva && cd /opt/adapteva \
 	&& axel -n 10 http://ftp.parallella.org/esdk/beta/esdk.2014.11.20150522_linux_armv7l.tar.gz && tar -xf esdk.2014.11.20150522_linux_armv7l.tar.gz && rm esdk.2014.11.20150522_linux_armv7l.tar.gz \
