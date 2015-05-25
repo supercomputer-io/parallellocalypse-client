@@ -43,11 +43,16 @@ RUN sed -i 's/\/bin\/sh/\/bin\/bash/g' /opt/adapteva/esdk/setup.sh && echo "sour
 
 RUN mkdir -p /app
 
+# Install libcoprthr_mpi
+ENV LIBCOPTHR_MPI_VERSION preview
 
-# Add COPRTHR MPI
-RUN bash -c "source /opt/adapteva/esdk/setup.sh && cd /app && wget http://www.browndeertechnology.com/code/bdt-libcoprthr_mpi-preview.tgz \
-	&& tar -xf bdt-libcoprthr_mpi-preview.tgz \
-	&& cd /app/libcoprthr_mpi && ./install.sh"
+RUN . /opt/adapteva/esdk/setup.sh \
+    && mkdir -p /usr/src/libcoprthr-mpi \
+    && curl -sL http://www.browndeertechnology.com/code/bdt-libcoprthr_mpi-$LIBCOPTHR_MPI_VERSION.tgz | tar xz -C /usr/src/libcoprthr-mpi --strip-components=1 \
+    && cd /usr/src/libcoprthr-mpi \
+    && ./install.sh \
+    && rm -rf /usr/src/libcoprthr_mpi
+
 
 # Clone the FFT correlation repo
 RUN cd /app && git clone https://github.com/olajep/parallella-fft-xcorr \
