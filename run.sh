@@ -18,3 +18,7 @@ if [ ! -f /app/installed.txt ]; then
 fi
 
 cd /app && npm start
+
+echo "Application exited"
+
+sleep 99999999
