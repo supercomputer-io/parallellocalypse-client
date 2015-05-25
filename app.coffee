@@ -16,15 +16,23 @@ require('superagent-cache')(request, {
 })
 
 config = require './config'
-getMac = require('getmac').getMac
+
 _ = require 'lodash'
+fs = require 'fs'
 
 console.log('Starting up...')
 
 #TO-DO: load from file
 dbimages = {}
 
-getMac (err,myMacAddress) ->
+getMac = (cb) ->
+	fs.readFile '/sys/class/net/eth0/address', (err, data) ->
+		if err
+			cb(err)
+		else
+			cb(null, data.toString().trim())
+
+getMac (err, myMacAddress) ->
 
 	if process.env.MOCK_MAC
 		myMacAddress = process.env.MOCK_MAC
