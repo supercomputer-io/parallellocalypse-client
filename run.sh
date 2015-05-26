@@ -8,7 +8,7 @@ parallella-thermald &
 
 if [ ! -f /usr/src/app/installed.txt ]; then
 	echo "Building FFT correlation"
-	cd /usr/src/app/parallella-fft-xcorr && PATH=/usr/local/browndeer/bin:$PATH LD_LIBRARY_PATH=/usr/local/browndeer/lib:$LD_LIBRARY_PATH make IMPL=coprthr
+	cd /usr/src/app/parallella-fft-xcorr && make clean && PATH=/usr/local/browndeer/bin:$PATH LD_LIBRARY_PATH=/usr/local/browndeer/lib:$LD_LIBRARY_PATH make IMPL=coprthr
 	install -m 644 /usr/src/app/parallella-fft-xcorr/libfft-demo-coprthr.so /usr/lib/
 	ldconfig /usr/lib /usr/local/browndeer/lib
 
