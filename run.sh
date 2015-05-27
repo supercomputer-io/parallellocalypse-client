@@ -4,7 +4,7 @@ set -o errexit
 
 source /opt/adapteva/esdk/setup.sh
 
-parallella-thermald &
+#parallella-thermald &
 
 if [ ! -f /usr/src/app/installed.txt ]; then
 	echo "Building FFT correlation"

@@ -1,7 +1,9 @@
 if process.env.MOCK_MAC
 	xcorr = require './lib/mock_xcorr'
+	thermald = null
 else
 	xcorr = require './build/Release/xcorr'
+	thermald = require './build/Release/thermald'
 
 request = require 'superagent'
 bcrypt = require 'bcrypt-nodejs'
@@ -34,26 +36,38 @@ getMac = (cb) ->
 
 getMac (err, myMacAddress) ->
 
+	registerWithServer = (status = 'Idle', cb = null) ->
+		console.log('Registering...')
+		request.get('http://ipinfo.io/json').end (err, loc) ->
+			location = loc.body or {}
+			request.post(hubUrl + 'api/devices')
+			.send({
+				resinId: process.env.RESIN_DEVICE_UUID
+				macAddress: myMacAddress
+				secret: bcrypt.hashSync(myMacAddress + config.secret)
+				location
+				status
+			}).end (err, res) ->
+				if err
+					console.log(err)
+				else
+					console.log(res.body)
+				if(cb?)
+					cb()
+
 	if process.env.MOCK_MAC
 		myMacAddress = process.env.MOCK_MAC
+	else
+		thermald.start ->
+			console.log("Temperature beyond limits. Gracefully crashing.")
+			registerWithServer "Overheating", ->
+				process.exit(0)
+
 
 	hubUrl = config.hubUrl or 'http://localhost:8080/'
 	hubImagesUrl = config.hubImagesUrl or 'http://parallellocalypse.s3-website-us-east-1.amazonaws.com'
 
-	console.log('Registering...')
-	request.get('http://ipinfo.io/json').end (err, loc) ->
-		location = loc.body
-		request.post(hubUrl + 'api/devices')
-		.send({
-			resinId: process.env.RESIN_DEVICE_UUID
-			macAddress: myMacAddress
-			secret: bcrypt.hashSync(myMacAddress + config.secret)
-			location
-		}).end (err, res) ->
-			if err
-				console.log(err)
-			else
-				console.log(res.body)
+	registerWithServer()
 
 	pubnub = require('pubnub')({
 		publish_key: config.publish_key
