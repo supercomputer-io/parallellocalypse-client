@@ -21,6 +21,9 @@ thermald = {
 				fs.readFile TEMP_SCALE_PATH, (err, tempScale) ->
 					throw err if err
 					tempScale = Number(tempScale)
+					console.log(rawTemp)
+					console.log(tempScale)
+					console.log(tempOffset)
 					temp = Math.round((rawTemp * tempScale / 1000) + tempOffset)
 					done(temp)
 
