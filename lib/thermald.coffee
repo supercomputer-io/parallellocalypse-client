@@ -24,7 +24,7 @@ thermald = {
 					console.log(rawTemp)
 					console.log(tempScale)
 					console.log(tempOffset)
-					temp = Math.round((rawTemp * tempScale / 1000) + tempOffset)
+					temp = Math.round((rawTemp + tempOffset) * tempScale / 1000)
 					done(temp)
 
 
