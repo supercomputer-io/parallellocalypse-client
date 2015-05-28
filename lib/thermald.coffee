@@ -21,18 +21,18 @@ module.exports = {
 				fs.readFile TEMP_SCALE_PATH, (err, tempScale) ->
 					throw err if err
 					tempScale = Number(tempScale)
-					temp = (rawTemp * tempScale / 1000) + tempOffset
+					temp = Math.round((rawTemp * tempScale / 1000) + tempOffset)
 					done(temp)
 
 
 	checkTempWithinLimits: (cb) ->
 		measureTemp (temp) ->
 			if temp < MIN_TEMP
-				console.log('Temperature below threshold')
+				console.log("Temperature (#{temp}°C) below threshold")
 				this.stop()
 				cb()
 			else if temp > MAX_TEMP
-				console.log('Temperature above threshold')
+				console.log("Temperature (#{temp}°C) above threshold")
 				this.stop()
 				cb()
 
