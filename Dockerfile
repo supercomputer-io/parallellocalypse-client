@@ -48,16 +48,6 @@ RUN . /opt/adapteva/esdk/setup.sh \
     && ./install.sh \
     && rm -rf /usr/src/libcoprthr_mpi
 
-# Install parallella thermald
-ENV PARALLELLA_UTILS_VERSION 4acba56ddd6c002d64b0f856572b227664fe904e
-
-RUN mkdir -p /usr/src/parallella-utils \
-    && curl -sL https://github.com/parallella/parallella-utils/archive/$PARALLELLA_UTILS_VERSION.tar.gz | tar xz -C /usr/src/parallella-utils --strip-components=1 \
-    && cd /usr/src/parallella-utils/thermald \
-    && make \
-    && make install \
-    && rm -rf /usr/src/parallella-utils
-
 # Clone the FFT correlation repo
 ENV PARALLELLA_FFT_XCORR_VERSION c2bee839535bcff868cdeb7c1c5f735a60d02f44
 

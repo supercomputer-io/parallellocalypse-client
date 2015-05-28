@@ -4,8 +4,6 @@ set -o errexit
 
 source /opt/adapteva/esdk/setup.sh
 
-#parallella-thermald &
-
 if [ ! -f /usr/src/app/installed.txt ]; then
 	echo "Building FFT correlation"
 	cd /usr/src/app/parallella-fft-xcorr && make clean && PATH=/usr/local/browndeer/bin:$PATH LD_LIBRARY_PATH=/usr/local/browndeer/lib:$LD_LIBRARY_PATH make IMPL=coprthr
