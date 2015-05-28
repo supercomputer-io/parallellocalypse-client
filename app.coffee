@@ -1,3 +1,4 @@
+console.log(process.env.MOCK_MAC)
 if process.env.MOCK_MAC
 	xcorr = require './lib/mock_xcorr'
 	thermald = null
