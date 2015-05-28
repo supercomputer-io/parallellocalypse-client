@@ -10,7 +10,7 @@ MAX_TEMP = process.env.THERMALD_MAX_TEMP or 70
 MIN_TEMP = 0 if MIN_TEMP < 0
 MAX_TEMP = 85 if MAX_TEMP > 85
 
-module.exports = {
+thermald = {
 	measureTemp: (done) ->
 		fs.readFile TEMP_RAW_PATH, (err, rawTemp) ->
 			throw err if err
@@ -26,22 +26,24 @@ module.exports = {
 
 
 	checkTempWithinLimits: (cb) ->
-		measureTemp (temp) ->
+		thermald.measureTemp (temp) ->
 			if temp < MIN_TEMP
 				console.log("Temperature (#{temp}°C) below threshold")
-				this.stop()
+				thermald.stop()
 				cb()
 			else if temp > MAX_TEMP
 				console.log("Temperature (#{temp}°C) above threshold")
-				this.stop()
+				thermald.stop()
 				cb()
 
 	start: (cb) ->
-		this.interval = setInterval ->
-			checkTempWithinLimits(cb)
+		thermald.interval = setInterval ->
+			thermald.checkTempWithinLimits(cb)
 		, 1000
 
 	stop: ->
-		if this.interval?
-			clearInterval(this.interval)
+		if thermald.interval?
+			clearInterval(thermald.interval)
 }
+
+module.exports = thermald
