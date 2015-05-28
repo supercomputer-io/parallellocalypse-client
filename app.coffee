@@ -3,7 +3,7 @@ if process.env.MOCK_MAC
 	thermald = null
 else
 	xcorr = require './build/Release/xcorr'
-	thermald = require './build/Release/thermald'
+	thermald = require './lib/thermald'
 
 request = require 'superagent'
 bcrypt = require 'bcrypt-nodejs'
