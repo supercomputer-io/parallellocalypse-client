@@ -58,17 +58,17 @@ getMac (err, myMacAddress) ->
 
 	if process.env.MOCK_MAC
 		myMacAddress = process.env.MOCK_MAC
-	else
-		thermald.start ->
-			console.log("Temperature beyond limits. Gracefully crashing.")
-			registerWithServer "Overheating", ->
-				process.exit(0)
 
 
 	hubUrl = config.hubUrl or 'http://localhost:8080/'
 	hubImagesUrl = config.hubImagesUrl or 'http://parallellocalypse.s3-website-us-east-1.amazonaws.com'
 
-	registerWithServer()
+	registerWithServer "Idle", ->
+		if thermald?
+			thermald.start ->
+				console.log("Temperature beyond limits. Gracefully crashing.")
+				registerWithServer "Overheating", ->
+					process.exit(0)
 
 	pubnub = require('pubnub')({
 		publish_key: config.publish_key
