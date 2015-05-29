@@ -28,9 +28,10 @@ double calculateXCorr(char * image1, char * image2, size_t n) {
 
 extern "C" {
 	// The real function from Ola's library
-	bool calculateXCorr(uint8_t *jpeg1, size_t jpeg1_size,
+	/*bool calculateXCorr(uint8_t *jpeg1, size_t jpeg1_size,
 		    uint8_t *jpeg2, size_t jpeg2_size,
-		    float *corr);
+		    float *corr);*/
+	#include <libfft-demo.h>
 }
 
 
@@ -46,19 +47,41 @@ Handle<Value> xcorr(const Arguments& args) {
 	Local<Object> bufferObj1 = args[0]->ToObject();
 	unsigned char* image1 = (unsigned char *) node::Buffer::Data(bufferObj1);
 
-	Local<Object> bufferObj2 = args[1]->ToObject();
-	unsigned char* image2 = (unsigned char *) node::Buffer::Data(bufferObj2);
+	//Local<Object> bufferObj2 = args[1]->ToObject();
+	//unsigned char* image2 = (unsigned char *) node::Buffer::Data(bufferObj2);
 
 	size_t n1 = node::Buffer::Length(bufferObj1);
-	size_t n2 = node::Buffer::Length(bufferObj2);
+	
+	//size_t n2 = node::Buffer::Length(bufferObj2);
 	//double xcorrValue = calculateXCorr(image1, image2, n);
 
-	float xcorrValue;
 
-	if(calculateXCorr(image1, n1, image2, n2, &xcorrValue)) {
+	
+	struct jpeg_image image1s;
+	image1s.data = image1;
+	image1s.size = n1;
+
+	Local<Array> imagesArray = Local<Array>::Cast(args[1]);
+	size_t arrayLength = imagesArray->Length();
+
+	struct jpeg_image images[arrayLength];
+
+	for(size_t i = 0; i < arrayLength; i++) {
+		Local<Object> bufObj = imagesArray->Get(i)->ToObject();
+		images[i].data = node::Buffer::Data(bufObj);
+		images[i].size = node::Buffer::Length(bufObj);
+	}
+
+	float xcorrValue[arrayLength];
+
+	if(calculateXCorr2(&image1s, images, (int) arrayLength, xcorrValue)) {
 		Local<Function> cb = Local<Function>::Cast(args[2]);
 		const unsigned argc = 1;
-		Local<Value> argv[argc] = { Number::New(xcorrValue) };
+		Local<Value> argv[argc];
+		Local<Array> results = Array::New(arrayLength);
+		for(size_t i = 0; i < arrayLength; i++)
+			results->Set(i, Number::New(xcorrValue[i]));
+		argv[0] = results;
 		cb->Call(Context::GetCurrent()->Global(), argc, argv);
 	}
 	else {

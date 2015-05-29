@@ -135,6 +135,31 @@ getMac (err, myMacAddress) ->
 				message: theResult
 			})
 
+		whenDone2 = (theResult) ->
+			console.log('Done!')
+			
+			console.log(theResult)
+			pubnub.publish({
+				channel: 'working'
+				message: {
+					device: myMacAddress
+					progress: 100
+				}
+			})
+
+			pubnub.state({
+				channel: 'work'
+				state: {
+					status: 'Idle'
+					chunkId: null
+				}
+			})
+
+			pubnub.publish({
+				channel: 'results'
+				message: theResult
+			})
+
 		progress = 0
 		onProgress = (amountDone, totalSize) ->
 			percent = amountDone * 100 / totalSize
@@ -164,12 +189,35 @@ getMac (err, myMacAddress) ->
 				if(amountDone == work.workSize)
 					whenDone()
 
+		correlate2 = (images, image1) ->
+			onProgress(0, images.length)
+			imgArray = []
+			for i in [0...images.length]
+				if ! dbimages[images[i].uuid]?
+					throw "Image not in cache - can't do it"
+				imgArray[i] = dbimages[images[i].uuid].data
+
+			xcorr image1, imgArray, (res) ->
+				theResult = {}
+				theResult.value = _.max(res)
+				theResult.device = myMacAddress
+				theResult.elapsedTime = Date.now() - startTime
+				ind = _.indexOf(res, theResult.value)
+				theImage = images[ind]
+				theResult.name = theImage.image.personName
+				theResult.imageId = theImage.image.id
+				theResult.imageUrl = theImage.image.path
+				theResult.chunkId = work.chunkId
+				whenDone2(theResult)
+
+
 		console.log('Getting:')
 		console.log(hubImagesUrl + work.targetImage)
 		request.get(hubImagesUrl + work.targetImage).end (req, res) ->
 			image1 = res.body
-			_.each work.images, (img, ind) ->
-				correlate(ind, img, image1)
+			correlate2(images, image1)
+			#_.each work.images, (img, ind) ->
+			#	correlate(ind, img, image1)
 
 	pubnub.subscribe({
 		channel: myMacAddress
