@@ -19,7 +19,6 @@
   "dependencies": {
     "bcrypt-nodejs": "0.0.3",
     "coffee-script": "^1.9.2",
-    "getmac": "^1.0.7",
     "jimp": "^0.2.3",
     "lodash": "^3.8.0",
     "node-cache": "^2.1.1",
