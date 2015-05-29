@@ -71,6 +71,7 @@ getMac (err, myMacAddress) ->
 					process.exit(0)
 
 	pubnub = require('pubnub')({
+		origin: 'resin.pubnub.com'
 		publish_key: config.publish_key
 		subscribe_key: config.subscribe_key
 		uuid: myMacAddress
