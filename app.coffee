@@ -204,7 +204,7 @@ getMac (err, myMacAddress) ->
 				theResult.device = myMacAddress
 				theResult.elapsedTime = Date.now() - startTime
 				ind = _.indexOf(res, theResult.value)
-				theImage = images[ind]
+				theImage = dbimages[images[ind].uuid]
 				theResult.name = theImage.image.personName
 				theResult.imageId = theImage.image.id
 				theResult.imageUrl = theImage.image.path
