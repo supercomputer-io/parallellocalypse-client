@@ -12,7 +12,8 @@ if [ ! -f /usr/src/app/installed.txt ]; then
 
 	cp /usr/src/app/parallella-fft-xcorr/device.cbin.3.e32 /usr/src/app/
 	echo "Installing app"
-	cd /usr/src/app && npm install --unsafe-perm
+	#cd /usr/src/app && npm install --unsafe-perm
+	cd /usr/src/app && ./node_modules/.bin/node-gyp configure build
 
 	touch /usr/src/app/installed.txt
 fi
