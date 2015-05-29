@@ -19,6 +19,7 @@ if [ ! -f /usr/src/app/installed.txt ]; then
 fi
 
 cd /usr/src/app && npm start
+cd /usr/src/app && ./node_modules/.bin/pm2 logs
 
 echo "Application exited"
 
