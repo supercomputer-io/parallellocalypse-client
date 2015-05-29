@@ -216,7 +216,7 @@ getMac (err, myMacAddress) ->
 		console.log(hubImagesUrl + work.targetImage)
 		request.get(hubImagesUrl + work.targetImage).end (req, res) ->
 			image1 = res.body
-			correlate2(images, image1)
+			correlate2(work.images, image1)
 			#_.each work.images, (img, ind) ->
 			#	correlate(ind, img, image1)
 
