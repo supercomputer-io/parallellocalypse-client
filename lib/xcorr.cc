@@ -68,8 +68,8 @@ Handle<Value> xcorr(const Arguments& args) {
 
 	for(size_t i = 0; i < arrayLength; i++) {
 		Local<Object> bufObj = imagesArray->Get(i)->ToObject();
-		images[i].data = node::Buffer::Data(bufObj);
-		images[i].size = node::Buffer::Length(bufObj);
+		images[i].data = (uint8_t *) node::Buffer::Data(bufObj);
+		images[i].size = (size_t) node::Buffer::Length(bufObj);
 	}
 
 	float xcorrValue[arrayLength];
