@@ -56,6 +56,7 @@ getMac (err, myMacAddress) ->
 				console.log(res.body)
 
 	pubnub = require('pubnub')({
+		origin: 'resin.pubnub.com'
 		publish_key: config.publish_key
 		subscribe_key: config.subscribe_key
 		uuid: myMacAddress
