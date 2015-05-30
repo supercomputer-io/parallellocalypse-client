@@ -1,5 +1,6 @@
 #include <node.h>
 #include <node_buffer.h>
+#include <nan.h>
 #include <math.h>
 #include <cstdlib>
 #include <cstdio>
@@ -28,49 +29,72 @@ double calculateXCorr(char * image1, char * image2, size_t n) {
 
 extern "C" {
 	// The real function from Ola's library
-	bool calculateXCorr(uint8_t *jpeg1, size_t jpeg1_size,
+	/*bool calculateXCorr(uint8_t *jpeg1, size_t jpeg1_size,
 		    uint8_t *jpeg2, size_t jpeg2_size,
-		    float *corr);
+		    float *corr);*/
+	#include <libfft-demo.h>
 }
 
 
-Handle<Value> xcorr(const Arguments& args) {
-	HandleScope scope;
+NAN_METHOD(xcorr) {
+	NanScope();
 
 	if (args.Length() < 3) {
 		ThrowException(Exception::TypeError(
-			String::New("Wrong number of arguments")));
-		return scope.Close(Undefined());
+			NanNew<String>("Wrong number of arguments")));
+		NanReturnUndefined();
 	}
 
 	Local<Object> bufferObj1 = args[0]->ToObject();
 	unsigned char* image1 = (unsigned char *) node::Buffer::Data(bufferObj1);
 
-	Local<Object> bufferObj2 = args[1]->ToObject();
-	unsigned char* image2 = (unsigned char *) node::Buffer::Data(bufferObj2);
+	//Local<Object> bufferObj2 = args[1]->ToObject();
+	//unsigned char* image2 = (unsigned char *) node::Buffer::Data(bufferObj2);
 
 	size_t n1 = node::Buffer::Length(bufferObj1);
-	size_t n2 = node::Buffer::Length(bufferObj2);
+	
+	//size_t n2 = node::Buffer::Length(bufferObj2);
 	//double xcorrValue = calculateXCorr(image1, image2, n);
 
-	float xcorrValue;
 
-	if(calculateXCorr(image1, n1, image2, n2, &xcorrValue)) {
-		Local<Function> cb = Local<Function>::Cast(args[2]);
+	
+	struct jpeg_image image1s;
+	image1s.data = image1;
+	image1s.size = n1;
+
+	Local<Array> imagesArray = Local<Array>::Cast(args[1]);
+	size_t arrayLength = imagesArray->Length();
+
+	struct jpeg_image images[arrayLength];
+
+	for(size_t i = 0; i < arrayLength; i++) {
+		Local<Object> bufObj = imagesArray->Get(i)->ToObject();
+		images[i].data = (uint8_t *) node::Buffer::Data(bufObj);
+		images[i].size = (size_t) node::Buffer::Length(bufObj);
+	}
+
+	float xcorrValue[arrayLength];
+
+	if(calculateXCorr2(&image1s, images, (int) arrayLength, xcorrValue)) {
+		Local<Function> cb = args[2].As<Function>();
 		const unsigned argc = 1;
-		Local<Value> argv[argc] = { Number::New(xcorrValue) };
+		Local<Value> argv[argc];
+		Local<Array> results = NanNew<Array>(arrayLength);
+		for(size_t i = 0; i < arrayLength; i++)
+			results->Set(i, NanNew<Number>(xcorrValue[i]));
+		argv[0] = results;
 		cb->Call(Context::GetCurrent()->Global(), argc, argv);
 	}
 	else {
 		ThrowException(Exception::TypeError(
-			String::New("Correlation failed")));
+			NanNew<String>("Correlation failed")));
 	}
 	
-	return scope.Close(Undefined());
+	NanReturnUndefined();
 }
 
 void Init(Handle<Object> exports, Handle<Object> module) {
-	module->Set(String::NewSymbol("exports"),
-    	FunctionTemplate::New(xcorr)->GetFunction());
+	module->Set(NanNew<String>("exports"),
+    	NanNew<FunctionTemplate>(xcorr)->GetFunction());
 }
 NODE_MODULE(xcorr, Init)
