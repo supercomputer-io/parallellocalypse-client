@@ -80,7 +80,7 @@ getMac (err, myMacAddress) ->
 	console.log('Subscribing...')
 	pubnub.subscribe({
 		channel: 'work',
-		heartbeat: 10,
+		heartbeat: 20,
 		state: {
 			status: 'Started'
 			chunkId: null
