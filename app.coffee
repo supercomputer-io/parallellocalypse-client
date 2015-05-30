@@ -228,12 +228,14 @@ getMac (err, myMacAddress) ->
 	})
 
 	semaphore = 0
+	pageCount = 0
 	warmCache = (data) ->
 		if semaphore < 1
+			pageCount += 1
 			warm(data)
 		else
 			warmPartial = _.partial warmCache, data
-			setTimeout(warmPartial, 10)
+			setTimeout(warmPartial, 100)
 
 	warm = (data) ->
 		semaphore += 1
@@ -251,17 +253,17 @@ getMac (err, myMacAddress) ->
 				image: img
 				data: data
 			}
-			console.log(ind)
 			if ind == (images.length - 1)
 				console.log('Done')
 				semaphore -= 1
-				if data.page == data.nPages
+				if pageCount == data.nPages
 					pubnub.state({
 						channel: 'work'
 						state: {
 							status: 'Idle'
 						}
 					})
+					pageCount = 0
 
 		getImage = (ind) ->
 			img = images[ind]
@@ -272,7 +274,6 @@ getMac (err, myMacAddress) ->
 						if err
 							throw err
 						saveImage(img, ind, res.body)
-				console.log("got")
 				saveImage(img, ind, res.body)
 
 		for ind in [0...images.length]
