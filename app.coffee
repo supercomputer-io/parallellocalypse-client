@@ -227,7 +227,16 @@ getMac (err, myMacAddress) ->
 		message: processWork
 	})
 
+	semaphore = 0
 	warmCache = (data) ->
+		if semaphore < 100
+			warm(data)
+		else
+			warmPartial = _.partial warm, data
+			setTimeout(warmPartial, 10)
+
+	warm = (data) ->
+		semaphore += 1
 		pubnub.state({
 			channel: 'work'
 			state: {
@@ -238,22 +247,24 @@ getMac (err, myMacAddress) ->
 		images = data.images
 
 		saveImage = (img, ind) ->
-				dbimages[img.uuid] = {
-					image: img
-					data: res.body
-				}
-				if ind == (images.length - 1)
-					console.log('Done')
-					if data.page == data.nPages
-						pubnub.state({
-							channel: 'work'
-							state: {
-								status: 'Idle'
-							}
-						})
+			dbimages[img.uuid] = {
+				image: img
+				data: res.body
+			}
+			if ind == (images.length - 1)
+				console.log('Done')
+				semaphore -= 1
+				if data.page == data.nPages
+					pubnub.state({
+						channel: 'work'
+						state: {
+							status: 'Idle'
+						}
+					})
 
 		for ind in [0...images.length]
 			img = images[ind]
+			
 			request.get(hubImagesUrl + img.path).end (err, res) ->
 				if err
 					request.get(hubImagesUrl + img.path).end (err, res) ->
