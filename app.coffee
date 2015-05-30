@@ -195,7 +195,9 @@ getMac (err, myMacAddress) ->
 			imgArray = []
 			for i in [0...images.length]
 				if ! dbimages[images[i].uuid]?
-					throw "Image not in cache - can't do it"
+					console.log("Image not in cache - can't do it")
+					process.exit(1)
+
 				imgArray[i] = dbimages[images[i].uuid].data
 
 			xcorr image1, imgArray, (res) ->
