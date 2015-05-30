@@ -1,7 +1,10 @@
+console.log(process.env.MOCK_MAC)
 if process.env.MOCK_MAC
 	xcorr = require './lib/mock_xcorr'
+	thermald = null
 else
 	xcorr = require './build/Release/xcorr'
+	thermald = require './lib/thermald'
 
 request = require 'superagent'
 bcrypt = require 'bcrypt-nodejs'
@@ -34,26 +37,38 @@ getMac = (cb) ->
 
 getMac (err, myMacAddress) ->
 
+	registerWithServer = (status = 'Idle', cb = null) ->
+		console.log('Registering...')
+		request.get('http://ipinfo.io/json').end (err, loc) ->
+			location = loc.body or {}
+			request.post(hubUrl + 'api/devices')
+			.send({
+				resinId: process.env.RESIN_DEVICE_UUID
+				macAddress: myMacAddress
+				secret: bcrypt.hashSync(myMacAddress + config.secret)
+				location
+				status
+			}).end (err, res) ->
+				if err
+					console.log(err)
+				else
+					console.log(res.body)
+				if(cb?)
+					cb()
+
 	if process.env.MOCK_MAC
 		myMacAddress = process.env.MOCK_MAC
+
 
 	hubUrl = config.hubUrl or 'http://localhost:8080/'
 	hubImagesUrl = config.hubImagesUrl or 'http://parallellocalypse.s3-website-us-east-1.amazonaws.com'
 
-	console.log('Registering...')
-	request.get('http://ipinfo.io/json').end (err, loc) ->
-		location = loc.body
-		request.post(hubUrl + 'api/devices')
-		.send({
-			resinId: process.env.RESIN_DEVICE_UUID
-			macAddress: myMacAddress
-			secret: bcrypt.hashSync(myMacAddress + config.secret)
-			location
-		}).end (err, res) ->
-			if err
-				console.log(err)
-			else
-				console.log(res.body)
+	registerWithServer "Idle", ->
+		if thermald?
+			thermald.start ->
+				console.log("Temperature beyond limits. Gracefully crashing.")
+				registerWithServer "Overheating", ->
+					process.exit(0)
 
 	pubnub = require('pubnub')({
 		origin: 'resin.pubnub.com'
@@ -121,6 +136,31 @@ getMac (err, myMacAddress) ->
 				message: theResult
 			})
 
+		whenDone2 = (theResult) ->
+			console.log('Done!')
+			
+			console.log(theResult)
+			pubnub.publish({
+				channel: 'working'
+				message: {
+					device: myMacAddress
+					progress: 100
+				}
+			})
+
+			pubnub.state({
+				channel: 'work'
+				state: {
+					status: 'Idle'
+					chunkId: null
+				}
+			})
+
+			pubnub.publish({
+				channel: 'results'
+				message: theResult
+			})
+
 		progress = 0
 		onProgress = (amountDone, totalSize) ->
 			percent = amountDone * 100 / totalSize
@@ -150,12 +190,35 @@ getMac (err, myMacAddress) ->
 				if(amountDone == work.workSize)
 					whenDone()
 
+		correlate2 = (images, image1) ->
+			onProgress(0, images.length)
+			imgArray = []
+			for i in [0...images.length]
+				if ! dbimages[images[i].uuid]?
+					throw "Image not in cache - can't do it"
+				imgArray[i] = dbimages[images[i].uuid].data
+
+			xcorr image1, imgArray, (res) ->
+				theResult = {}
+				theResult.value = _.max(res)
+				theResult.device = myMacAddress
+				theResult.elapsedTime = Date.now() - startTime
+				ind = _.indexOf(res, theResult.value)
+				theImage = dbimages[images[ind].uuid]
+				theResult.name = theImage.image.personName
+				theResult.imageId = theImage.image.id
+				theResult.imageUrl = theImage.image.path
+				theResult.chunkId = work.chunkId
+				whenDone2(theResult)
+
+
 		console.log('Getting:')
 		console.log(hubImagesUrl + work.targetImage)
 		request.get(hubImagesUrl + work.targetImage).end (req, res) ->
 			image1 = res.body
-			_.each work.images, (img, ind) ->
-				correlate(ind, img, image1)
+			correlate2(work.images, image1)
+			#_.each work.images, (img, ind) ->
+			#	correlate(ind, img, image1)
 
 	pubnub.subscribe({
 		channel: myMacAddress
