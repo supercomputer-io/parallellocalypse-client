@@ -229,7 +229,7 @@ getMac (err, myMacAddress) ->
 
 	semaphore = 0
 	warmCache = (data) ->
-		if semaphore < 100
+		if semaphore < 1
 			warm(data)
 		else
 			warmPartial = _.partial warmCache, data
