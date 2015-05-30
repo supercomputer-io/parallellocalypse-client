@@ -251,6 +251,7 @@ getMac (err, myMacAddress) ->
 				image: img
 				data: data
 			}
+			console.log(ind)
 			if ind == (images.length - 1)
 				console.log('Done')
 				semaphore -= 1
@@ -262,7 +263,7 @@ getMac (err, myMacAddress) ->
 						}
 					})
 
-		for ind in [0...images.length]
+		getImage = (ind) ->
 			img = images[ind]
 			
 			request.get(hubImagesUrl + img.path).end (err, res) ->
@@ -271,7 +272,11 @@ getMac (err, myMacAddress) ->
 						if err
 							throw err
 						saveImage(img, ind, res.body)
+				console.log("got")
 				saveImage(img, ind, res.body)
+
+		for ind in [0...images.length]
+			getImage(ind)
 
 	pubnub.subscribe({
 		channel: 'images'
