@@ -1,5 +1,6 @@
 #include <node.h>
 #include <node_buffer.h>
+#include <nan.h>
 #include <math.h>
 #include <cstdlib>
 #include <cstdio>
@@ -35,13 +36,13 @@ extern "C" {
 }
 
 
-Handle<Value> xcorr(const Arguments& args) {
-	HandleScope scope;
+NAN_METHOD(xcorr) {
+	NanScope();
 
 	if (args.Length() < 3) {
 		ThrowException(Exception::TypeError(
-			String::New("Wrong number of arguments")));
-		return scope.Close(Undefined());
+			NanNew<String>("Wrong number of arguments")));
+		NanReturnUndefined();
 	}
 
 	Local<Object> bufferObj1 = args[0]->ToObject();
@@ -75,25 +76,25 @@ Handle<Value> xcorr(const Arguments& args) {
 	float xcorrValue[arrayLength];
 
 	if(calculateXCorr2(&image1s, images, (int) arrayLength, xcorrValue)) {
-		Local<Function> cb = Local<Function>::Cast(args[2]);
+		Local<Function> cb = args[2].As<Function>();
 		const unsigned argc = 1;
 		Local<Value> argv[argc];
-		Local<Array> results = Array::New(arrayLength);
+		Local<Array> results = NanNew<Array>(arrayLength);
 		for(size_t i = 0; i < arrayLength; i++)
-			results->Set(i, Number::New(xcorrValue[i]));
+			results->Set(i, NanNew<Number>(xcorrValue[i]));
 		argv[0] = results;
 		cb->Call(Context::GetCurrent()->Global(), argc, argv);
 	}
 	else {
 		ThrowException(Exception::TypeError(
-			String::New("Correlation failed")));
+			NanNew<String>("Correlation failed")));
 	}
 	
-	return scope.Close(Undefined());
+	NanReturnUndefined();
 }
 
 void Init(Handle<Object> exports, Handle<Object> module) {
-	module->Set(String::NewSymbol("exports"),
-    	FunctionTemplate::New(xcorr)->GetFunction());
+	module->Set(NanNew<String>("exports"),
+    	NanNew<FunctionTemplate>(xcorr)->GetFunction());
 }
 NODE_MODULE(xcorr, Init)
