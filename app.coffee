@@ -232,12 +232,12 @@ getMac (err, myMacAddress) ->
 	warmCache = (data) ->
 		if semaphore < 1
 			pageCount += 1
-			warm(data)
+			warm(data, pageCount)
 		else
 			warmPartial = _.partial warmCache, data
 			setTimeout(warmPartial, 100)
 
-	warm = (data) ->
+	warm = (data, pageCount) ->
 		semaphore += 1
 		pubnub.state({
 			channel: 'work'
@@ -257,6 +257,7 @@ getMac (err, myMacAddress) ->
 				console.log('Done')
 				semaphore -= 1
 				if pageCount == data.nPages
+					console.log('Warmup done')
 					pubnub.state({
 						channel: 'work'
 						state: {
