@@ -232,7 +232,7 @@ getMac (err, myMacAddress) ->
 		if semaphore < 100
 			warm(data)
 		else
-			warmPartial = _.partial warm, data
+			warmPartial = _.partial warmCache, data
 			setTimeout(warmPartial, 10)
 
 	warm = (data) ->
@@ -246,10 +246,10 @@ getMac (err, myMacAddress) ->
 		console.log("Warming cache")
 		images = data.images
 
-		saveImage = (img, ind) ->
+		saveImage = (img, ind, data) ->
 			dbimages[img.uuid] = {
 				image: img
-				data: res.body
+				data: data
 			}
 			if ind == (images.length - 1)
 				console.log('Done')
@@ -270,8 +270,8 @@ getMac (err, myMacAddress) ->
 					request.get(hubImagesUrl + img.path).end (err, res) ->
 						if err
 							throw err
-						saveImage(img, ind)
-				saveImage(img, ind)
+						saveImage(img, ind, res.body)
+				saveImage(img, ind, res.body)
 
 	pubnub.subscribe({
 		channel: 'images'
