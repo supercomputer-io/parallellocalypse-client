@@ -58,7 +58,7 @@ RUN mkdir -p /usr/src/app
 
 COPY . /usr/src/app
 
-RUN cd /usr/src/app && npm install
+#RUN cd /usr/src/app && npm install
 
 # Run this on startup.
 CMD [ "/usr/src/app/run.sh" ]
