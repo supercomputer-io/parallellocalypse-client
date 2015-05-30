@@ -236,10 +236,8 @@ getMac (err, myMacAddress) ->
 		})
 		console.log("Warming cache")
 		images = data.images
-		_.each images, (img, ind) ->
-			request.get(hubImagesUrl + img.path).end (err, res) ->
-				if err
-					throw err
+
+		saveImage = (img, ind) ->
 				dbimages[img.uuid] = {
 					image: img
 					data: res.body
@@ -253,6 +251,16 @@ getMac (err, myMacAddress) ->
 								status: 'Idle'
 							}
 						})
+
+		for ind in [0...images.length]
+			img = images[ind]
+			request.get(hubImagesUrl + img.path).end (err, res) ->
+				if err
+					request.get(hubImagesUrl + img.path).end (err, res) ->
+						if err
+							throw err
+						saveImage(img, ind)
+				saveImage(img, ind)
 
 	pubnub.subscribe({
 		channel: 'images'
