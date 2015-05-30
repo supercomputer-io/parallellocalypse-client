@@ -256,6 +256,7 @@ getMac (err, myMacAddress) ->
 			if ind == (images.length - 1)
 				console.log('Done')
 				console.log(pageCount)
+				console.log(data.nPages)
 				semaphore -= 1
 				if pageCount == data.nPages
 					console.log('Warmup done')
