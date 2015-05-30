@@ -239,6 +239,7 @@ getMac (err, myMacAddress) ->
 
 	warm = (data, pageCount) ->
 		semaphore += 1
+		pubData = data
 		pubnub.state({
 			channel: 'work'
 			state: {
@@ -256,9 +257,9 @@ getMac (err, myMacAddress) ->
 			if ind == (images.length - 1)
 				console.log('Done')
 				console.log(pageCount)
-				console.log(data.nPages)
+				console.log(pubData.nPages)
 				semaphore -= 1
-				if pageCount == data.nPages
+				if pageCount == pubData.nPages
 					console.log('Warmup done')
 					pubnub.state({
 						channel: 'work'
