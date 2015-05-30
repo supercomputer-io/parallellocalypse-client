@@ -27,6 +27,7 @@
     "pm2": "^0.12.15",
     "pubnub": "^3.7.10",
     "request": "^2.55.0",
+    "segfault-handler": "^0.2.4",
     "superagent": "^1.2.0",
     "superagent-cache": "^0.1.17"
   },
